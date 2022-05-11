@@ -14,7 +14,6 @@ service Faucet {
 
 message FundingRequest {
     string wallet_address = 1;
-    string captcha_response = 2;
 }
 
 message FundingResponse {
