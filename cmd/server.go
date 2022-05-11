@@ -3,12 +3,17 @@ package cmd
 import (
 	"os"
 	"runtime"
-
+	"encoding/json"
 	"github.com/rauljordan/eth-faucet/internal"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
+
+type PrivateKey struct {
+	Value string `json:"PrivateKey"`
+}
+
 
 var (
 	log         = logrus.WithField("prefix", "cmd")
@@ -30,6 +35,16 @@ var (
 			if cfg.Web3Provider == "" {
 				log.Fatal("--web3-provider endpoint required")
 			}
+
+			privateKeyJson := os.Getenv("PRIVATE_KEY")
+
+			var privateKey PrivateKey
+  		if err := json.Unmarshal([]byte(privateKeyJson), &privateKey); err != nil {
+				log.Fatalf("PRIVATE_KEY problem: %v", err)
+  		}
+
+			cfg.PrivateKey = privateKey.Value
+
 			if cfg.PrivateKey == "" {
 				log.Fatal("--private-key hex string required")
 			}
@@ -44,6 +59,7 @@ var (
 )
 
 func init() {
+
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.Flags().StringVar(&cfgFilePath, "config", "", "Flag config yaml file path (optional)")
@@ -53,7 +69,7 @@ func init() {
 	rootCmd.Flags().String("http-host", "127.0.0.1", "Host to serve REST http requests")
 	rootCmd.Flags().StringSlice("allowed-origins", []string{"*"}, "Allowed origins for REST http requests, comma-separated")
 	rootCmd.Flags().String("web3-provider", "http://localhost:8545", "HTTP web3provider endpoint to an Ethereum node")
-	rootCmd.Flags().String("private-key", "", "Private key hex string of the funder of the faucet")
+	//rootCmd.Flags().String("private-key", "", "Private key hex string of the funder of the faucet")
 	rootCmd.Flags().String("funding-amount", "32500000000000000000", "Amount in wei to fund with each request")
 	rootCmd.Flags().Uint64("gas-limit", 40000, "Gas limit for funding transactions")
 	rootCmd.Flags().Int64("chain-id", 5, "Chain ID for Ethereum (5 is the Goerli test network)")
