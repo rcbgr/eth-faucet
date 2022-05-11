@@ -32,7 +32,6 @@ type FundingRequest struct {
 	unknownFields protoimpl.UnknownFields
 
 	WalletAddress   string `protobuf:"bytes,1,opt,name=wallet_address,json=walletAddress,proto3" json:"wallet_address,omitempty"`
-	CaptchaResponse string `protobuf:"bytes,2,opt,name=captcha_response,json=captchaResponse,proto3" json:"captcha_response,omitempty"`
 }
 
 func (x *FundingRequest) Reset() {
@@ -70,13 +69,6 @@ func (*FundingRequest) Descriptor() ([]byte, []int) {
 func (x *FundingRequest) GetWalletAddress() string {
 	if x != nil {
 		return x.WalletAddress
-	}
-	return ""
-}
-
-func (x *FundingRequest) GetCaptchaResponse() string {
-	if x != nil {
-		return x.CaptchaResponse
 	}
 	return ""
 }

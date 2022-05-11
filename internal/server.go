@@ -16,7 +16,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/prestonvanloon/go-recaptcha"
 	faucetpb "github.com/rauljordan/eth-faucet/proto/faucet"
 	gateway "github.com/rauljordan/minimal-grpc-gateway"
 	"github.com/sirupsen/logrus"
@@ -35,9 +34,6 @@ type Config struct {
 	HttpPort          int      `mapstructure:"http-port"`
 	HttpHost          string   `mapstructure:"http-host"`
 	AllowedOrigins    []string `mapstructure:"allowed-origins"`
-	CaptchaHost       string   `mapstructure:"captcha-host"`
-	CaptchaSecret     string   `mapstructure:"captcha-secret"`
-	CaptchaMinScore   float64  `mapstructure:"captcha-min-score"`
 	Web3Provider      string   `mapstructure:"web3-provider"`
 	PrivateKey        string   `mapstructure:"private-key"`
 	FundingAmount     string   `mapstructure:"funding-amount"`
@@ -50,12 +46,10 @@ type Config struct {
 type Server struct {
 	faucetpb.UnimplementedFaucetServer
 	cfg           *Config
-	captcha       recaptcha.Recaptcha
 	client        *ethclient.Client
 	funder        common.Address
 	pk            *ecdsa.PrivateKey
 	fundingAmount *big.Int
-	rateLimiter   rateLimiter
 }
 
 // NewServer initializes the server from configuration values.
@@ -81,14 +75,12 @@ func NewServer(cfg *Config) (*Server, error) {
 		cfg:           cfg,
 		client:        client,
 		funder:        funder,
-		captcha:       recaptcha.Recaptcha{RecaptchaPrivateKey: cfg.CaptchaSecret},
 		pk:            pk,
 		fundingAmount: fundingAmount,
-		rateLimiter:   newSimpleRateLimiter(cfg.IpLimitPerAddress),
 	}, nil
 }
 
-// Start a faucet server by serving a gRPC connection, an http JSON server, and a rate limiter.
+// Start a faucet server by serving a gRPC connection, an http JSON server
 func (s *Server) Start() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -116,9 +108,6 @@ func (s *Server) Start() {
 			log.WithError(err).Fatal("Stopped server")
 		}
 	}()
-
-	// Check IP addresses and reset their max request count over time.
-	go s.rateLimiter.refreshLimits(ctx)
 
 	// Start a gRPC Gateway to serve http JSON requests.
 	gatewayAddress := fmt.Sprintf("%s:%d", s.cfg.HttpHost, s.cfg.HttpPort)

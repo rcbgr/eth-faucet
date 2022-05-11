@@ -19,7 +19,7 @@ import (
 
 const weiPerETH = 1e18
 
-// RequestFunds from an Ethereum faucet. Requires a valid captcha response.
+// RequestFunds from an Ethereum faucet
 func (s *Server) RequestFunds(
 	ctx context.Context, req *faucetpb.FundingRequest,
 ) (*faucetpb.FundingResponse, error) {
@@ -32,18 +32,6 @@ func (s *Server) RequestFunds(
 		return nil, status.Errorf(codes.FailedPrecondition, "Could not get IP address from request: %v", err)
 	}
 
-	// Verify the provided captcha in the request.
-	log.WithField("ipAddress", ipAddress).Info("Verifying captcha...")
-	if err := s.verifyRecaptcha(ipAddress, req); err != nil {
-		log.WithError(err).Error("Failed captcha verification")
-		return nil, status.Errorf(codes.PermissionDenied, "Failed captcha verification: %v", err)
-	}
-
-	// Check if ip should be rate limited.
-	if !s.rateLimiter.shouldAllowRequest(ipAddress, req.WalletAddress) {
-		return nil, status.Error(codes.PermissionDenied, "Funded too recently")
-	}
-
 	log.WithFields(logrus.Fields{
 		"ipAddress": ipAddress,
 		"address":   req.WalletAddress,
@@ -53,9 +41,6 @@ func (s *Server) RequestFunds(
 		log.WithError(err).Error("Could not send goerli transaction")
 		return nil, status.Errorf(codes.Internal, "Could not send goerli transaction: %v", err)
 	}
-
-	// Mark the ip and Ethereum address pair as funded for the rate limiter.
-	s.rateLimiter.markAsFunded(ipAddress, req.WalletAddress)
 
 	log.WithFields(logrus.Fields{
 		"txHash":           txHash,
