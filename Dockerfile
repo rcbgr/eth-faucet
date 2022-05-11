@@ -20,7 +20,7 @@ RUN GO111MODULE=on go mod download
 COPY ./ ./
 
 # Build the executable to `/app`. Mark the build as statically linked.
-RUN GO111MODULE=on CGO_ENABLED=0 go build \
+RUN GO111MODULE=on GOOS=linux CGO_ENABLED=0 go build \
     -installsuffix 'static' \
     -o /app .
 
@@ -32,5 +32,4 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 # Import the compiled executable from the first stage.
 COPY --from=builder /app /app
 
-# Run the compiled binary.
-ENTRYPOINT ["/app"]
+CMD ["/app"]
