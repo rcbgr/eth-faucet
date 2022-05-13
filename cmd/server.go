@@ -80,8 +80,8 @@ func init() {
 	rootCmd.Flags().String("http-host", "127.0.0.1", "Host to serve REST http requests")
 	rootCmd.Flags().StringSlice("allowed-origins", []string{"*"}, "Allowed origins for REST http requests, comma-separated")
 	//rootCmd.Flags().String("private-key", "", "Private key hex string of the funder of the faucet")
-	rootCmd.Flags().String("funding-amount", "3250000000000000", "Amount in wei to fund with each request")
-	rootCmd.Flags().Uint64("gas-limit", 40000, "Gas limit for funding transactions")
+	rootCmd.Flags().String("funding-amount", "50000000000000000", "Amount in wei to fund with each request")
+	rootCmd.Flags().Uint64("gas-limit", 29000000, "Gas limit for funding transactions")
 	rootCmd.Flags().Int64("chain-id", 4, "Chain ID for Ethereum (4 is the rinkeby test network)")
 
 	// Bind all flags to a viper configuration.
