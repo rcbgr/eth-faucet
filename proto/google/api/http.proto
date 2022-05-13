@@ -312,7 +312,6 @@ message HttpRule {
 message CustomHttpPattern {
   // The name of this custom HTTP verb.
   string kind = 1;
-
   // The path matched by this custom verb.
   string path = 2;
 }
