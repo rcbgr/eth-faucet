@@ -38,8 +38,8 @@ func (s *Server) RequestFunds(
 	}).Info("Attempting to fund address")
 	txHash, err := s.fundAndWait(common.HexToAddress(req.WalletAddress))
 	if err != nil {
-		log.WithError(err).Error("Could not send goerli transaction")
-		return nil, status.Errorf(codes.Internal, "Could not send goerli transaction: %v", err)
+		log.WithError(err).Error("Could not send transaction")
+		return nil, status.Errorf(codes.Internal, "Could not send transaction: %v", err)
 	}
 
 	log.WithFields(logrus.Fields{
@@ -67,7 +67,7 @@ func (s *Server) fundAndWait(to common.Address) (string, error) {
 		to,
 		s.fundingAmount,
 		s.cfg.GasLimit,
-		big.NewInt(1*params.GWei), /* testnet gas price */
+		big.NewInt(1.9*params.GWei), /* testnet gas price */
 		nil,                       /* data */
 	)
 	tx, err = types.SignTx(tx, types.NewEIP155Signer(big.NewInt(s.cfg.ChainId)), s.pk)
